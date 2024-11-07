@@ -252,7 +252,7 @@ packages:
   name: hcp-vault-secrets-wrapper
   version: 0.5.0
   path: .
-  sha256: bf93f8f6c4b3e8894b0f5e4a31ad2938c566bb95380982c07ddd02b518d23af3
+  sha256: 7662cda22247d8afee098515b3b3356b83633e746cdab2b216ae4b055934bbce
   requires_dist:
   - build>=1.2.2.post1,<2
   requires_python: '>=3.6'
