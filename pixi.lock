@@ -381,9 +381,9 @@ packages:
   timestamp: 1720869435725
 - kind: pypi
   name: hcp-vault-secrets-wrapper
-  version: 0.6.0
+  version: 0.7.0
   path: .
-  sha256: f0d251e4aad2210408f9b1aec0d36f1affb9d229c1ce034a7f0f1828f96db853
+  sha256: 147eafde62e9fe07cd385d8801b3e8bba692110dcf6cc63dc8f0093b6fd7786f
   requires_dist:
   - build>=1.2.2.post1,<2
   requires_python: '>=3.6'
