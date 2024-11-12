@@ -18,8 +18,10 @@ except Exception:
 HCP_DEFAULT_SECRET_URI = "/secrets/2023-11-28/organizations/{org_id}/projects/{project_id}/apps/{app_id}/secrets:open"
 
 class HCPVaultClient:
-    last_refresh = None
-    def __init__(self, client_id:str, client_secret:str, org_id:str, project_id:str, app_id:str, secret_uri:str=HCP_DEFAULT_SECRET_URI, refresh_timeout_min:int=HCP_REFRESH_TIMEOUT_MIN):
+    last_refresh:datetime = None
+    def __init__(self, client_id:str, client_secret:str, org_id:str, project_id:str, app_id:str, secret_uri:str=HCP_DEFAULT_SECRET_URI, refresh_timeout_min:int=HCP_REFRESH_TIMEOUT_MIN, clear_refresh:bool=False):
+        if clear_refresh:
+            HCPVaultClient.last_refresh = None
         self.refresh_timeout = refresh_timeout_min
         self.client_id = client_id
         self.client_secret = client_secret
@@ -68,8 +70,9 @@ class HCPVaultClient:
         if not self.app_id:
             raise ValueError("HCP App ID not supplied.  Cannot make call")
 
-        refresh_due = (datetime.now() - HCPVaultClient.last_refresh) > timedelta(min=self.refresh_timeout)
-        if HCPVaultClient.last_refresh == None or refresh_due:
+        refresh_due = HCPVaultClient.last_refresh == None or \
+            (datetime.now() - HCPVaultClient.last_refresh) > timedelta(minutes=self.refresh_timeout)
+        if refresh_due:
             self.token = self._get_oauth_token()
 
             # Define request headers
