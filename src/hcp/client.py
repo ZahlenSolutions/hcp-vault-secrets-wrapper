@@ -4,11 +4,23 @@ import http.client
 from http.client import HTTPException
 import urllib.parse
 import json
+from datetime import datetime,timedelta
+import os
+
+HCP_REFRESH_DEFAULT = 25
+HCP_REFRESH_TIMEOUT_MIN = os.environ.get("HCP_REFRESH_TIMEOUT_MIN") or HCP_REFRESH_DEFAULT
+try:
+    HCP_REFRESH_TIMEOUT_MIN = int(HCP_REFRESH_TIMEOUT_MIN)
+except Exception:
+    HCP_REFRESH_TIMEOUT_MIN = HCP_REFRESH_DEFAULT
+    
 
 HCP_DEFAULT_SECRET_URI = "/secrets/2023-11-28/organizations/{org_id}/projects/{project_id}/apps/{app_id}/secrets:open"
 
 class HCPVaultClient:
-    def __init__(self, client_id:str, client_secret:str, org_id:str, project_id:str, app_id:str, secret_uri:str=HCP_DEFAULT_SECRET_URI ):
+    last_refresh = None
+    def __init__(self, client_id:str, client_secret:str, org_id:str, project_id:str, app_id:str, secret_uri:str=HCP_DEFAULT_SECRET_URI, refresh_timeout_min:int=HCP_REFRESH_TIMEOUT_MIN):
+        self.refresh_timeout = refresh_timeout_min
         self.client_id = client_id
         self.client_secret = client_secret
         self.org_id = org_id
@@ -56,24 +68,26 @@ class HCPVaultClient:
         if not self.app_id:
             raise ValueError("HCP App ID not supplied.  Cannot make call")
 
-        if not self.token:
+        refresh_due = (datetime.now() - HCPVaultClient.last_refresh) > timedelta(min=self.refresh_timeout)
+        if HCPVaultClient.last_refresh == None or refresh_due:
             self.token = self._get_oauth_token()
 
-        # Define request headers
-        headers = {
-            "Authorization": f"Bearer {self.token}"
-        }
-        try:
-            # Define API endpoint (customize organization, project, app)
-            conn = http.client.HTTPSConnection("api.cloud.hashicorp.com")
-            conn.request("GET", self.secret_uri.format(org_id=self.org_id, project_id=self.project_id, app_id=self.app_id), headers=headers)
-            response = conn.getresponse()
-            response_data = response.read()
-            conn.close()
-        except Exception as x:
-            raise HTTPException(f"Issue during secrets fetch connection: {x}")
-        # Parse and return the secret data
-        self.last_secrets = json.loads(response_data.decode("utf-8"))        
+            # Define request headers
+            headers = {
+                "Authorization": f"Bearer {self.token}"
+            }
+            try:
+                # Define API endpoint (customize organization, project, app)
+                conn = http.client.HTTPSConnection("api.cloud.hashicorp.com")
+                conn.request("GET", self.secret_uri.format(org_id=self.org_id, project_id=self.project_id, app_id=self.app_id), headers=headers)
+                response = conn.getresponse()
+                response_data = response.read()
+                conn.close()
+                HCPVaultClient.last_refresh = datetime.now()
+            except Exception as x:
+                raise HTTPException(f"Issue during secrets fetch connection: {x}")
+            # Parse and return the secret data
+            self.last_secrets = json.loads(response_data.decode("utf-8"))        
         return self._process_secrets()
 
     def _process_secrets(self):

@@ -1,7 +1,7 @@
 [project]
 name = "hcp-vault-secrets-wrapper"
 description = "A wrapper for handling HCP Vault Secrets on an app-by-app basis"
-version = "0.5.0"
+version = "0.6.0"
 authors = [{name = "Matthew Wright", email = "matt.jeremy.wright@gmail.com"}]
 dependencies = ["build>=1.2.2.post1,<2"]
 requires-python = ">= 3.6"
