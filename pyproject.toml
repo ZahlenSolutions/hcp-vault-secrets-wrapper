@@ -25,3 +25,12 @@ hcp_vault_secrets_wrapper = { path = ".", editable = true }
 [tool.pixi.dependencies]
 python = ">=3.6,<3.13"
 
+[tool.pixi.feature.test.dependencies]
+pytest = "*"
+python-dotenv = "*"
+
+[tool.pixi.feature.test.tasks]
+test = "pytest"
+
+[tool.pixi.environments]
+test = ["test"]
