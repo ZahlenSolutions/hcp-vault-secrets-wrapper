@@ -86,11 +86,11 @@ class HCPVaultClient:
                 response = conn.getresponse()
                 response_data = response.read()
                 conn.close()
+                # Parse and return the secret data
+                self.last_secrets = json.loads(response_data.decode("utf-8"))        
                 HCPVaultClient.last_refresh = datetime.now()
             except Exception as x:
                 raise HTTPException(f"Issue during secrets fetch connection: {x}")
-            # Parse and return the secret data
-            self.last_secrets = json.loads(response_data.decode("utf-8"))        
         return self._process_secrets()
 
     def _process_secrets(self):
