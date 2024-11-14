@@ -19,6 +19,7 @@ HCP_DEFAULT_SECRET_URI = "/secrets/2023-11-28/organizations/{org_id}/projects/{p
 
 class HCPVaultClient:
     last_refresh:datetime = None
+    last_secrets:any = None
     def __init__(self, client_id:str, client_secret:str, org_id:str, project_id:str, app_id:str, secret_uri:str=HCP_DEFAULT_SECRET_URI, refresh_timeout_min:int=HCP_REFRESH_TIMEOUT_MIN, clear_refresh:bool=False):
         if clear_refresh:
             HCPVaultClient.last_refresh = None
@@ -87,7 +88,7 @@ class HCPVaultClient:
                 response_data = response.read()
                 conn.close()
                 # Parse and return the secret data
-                self.last_secrets = json.loads(response_data.decode("utf-8"))        
+                HCPVaultClient.last_secrets = json.loads(response_data.decode("utf-8"))        
                 HCPVaultClient.last_refresh = datetime.now()
             except Exception as x:
                 raise HTTPException(f"Issue during secrets fetch connection: {x}")
@@ -95,8 +96,9 @@ class HCPVaultClient:
 
     def _process_secrets(self):
         final_data = {}
-        if "secrets" in self.last_secrets:
-            for secret in self.last_secrets["secrets"]:
+        last_secrets = HCPVaultClient.last_secrets
+        if "secrets" in last_secrets:
+            for secret in last_secrets["secrets"]:
                 if secret['type'] == 'kv':
                     final_data[secret["name"]] = secret["static_version"]["value"]
                 if secret['type'] == 'dynamic':
