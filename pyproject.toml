@@ -1,7 +1,7 @@
 [project]
 name = "hcp-vault-secrets-wrapper"
 description = "A wrapper for handling HCP Vault Secrets on an app-by-app basis"
-version = "0.7.2"
+version = "0.7.4"
 authors = [{name = "Matthew Wright", email = "matt.jeremy.wright@gmail.com"}]
 dependencies = ["build>=1.2.2.post1,<2"]
 requires-python = ">= 3.6"
@@ -32,5 +32,16 @@ python-dotenv = "*"
 [tool.pixi.feature.test.tasks]
 test = "pytest"
 
+[tool.pixi.feature.publish.dependencies]
+twine = "*"
+
+[tool.pixi.feature.publish.tasks]
+publish = "python -m twine upload dist/*"
+
+[tool.pixi.feature.build.tasks]
+build = "python -m build"
+
 [tool.pixi.environments]
 test = ["test"]
+publish = ["publish"]
+build = ["build"]
